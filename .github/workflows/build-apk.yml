@@ -1,43 +1,186 @@
-name: Build Android APK 2026
+name: Build Mobile Agent 2026 APK (Advanced)
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'debug'
+        type: choice
+        options:
+        - debug
+        - release
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.9'
+        python-version: '3.11'
 
     - name: Install system dependencies
       run: |
         sudo apt update
-        sudo apt install -y openjdk-17-jdk build-essential libssl-dev libffi-dev python3-dev
+        sudo apt install -y \
+          openjdk-17-jdk \
+          build-essential \
+          libssl-dev \
+          libffi-dev \
+          python3-dev \
+          zlib1g-dev \
+          libncurses5-dev \
+          libgdbm-dev \
+          libnss3-dev \
+          libreadline-dev \
+          libsqlite3-dev \
+          wget \
+          libbz2-dev \
+          git \
+          unzip \
+          zip
 
-    - name: Set up Java
+    - name: Set up Java environment
       run: |
         export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
         echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+        echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
+
+    - name: Verify Java installation
+      run: |
+        java -version
+        javac -version
+        echo "JAVA_HOME: $JAVA_HOME"
 
     - name: Install Python dependencies
       run: |
-        pip install --upgrade pip
-        pip install buildozer kivy pillow requests python-socketio[client]
+        python -m pip install --upgrade pip setuptools wheel
+        pip install \
+          buildozer \
+          cython \
+          kivy \
+          pillow \
+          requests \
+          python-socketio[client] \
+          websocket-client \
+          bidict \
+          python-engineio
 
-    - name: Build APK
-      run: |
-        buildozer android debug
-
-    - name: Upload APK
-      uses: actions/upload-artifact@v3
+    - name: Cache Buildozer global directory
+      uses: actions/cache@v4
       with:
-        name: mobile-agent-2026-apk
-        path: bin/*.apk
+        path: .buildozer_global
+        key: buildozer-global-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          buildozer-global-${{ runner.os }}-
+
+    - name: Cache Buildozer directory
+      uses: actions/cache@v4
+      with:
+        path: .buildozer
+        key: buildozer-${{ runner.os }}-${{ hashFiles('buildozer.spec') }}
+        restore-keys: |
+          buildozer-${{ runner.os }}-
+
+    - name: Initialize Buildozer
+      run: |
+        buildozer init || echo "Buildozer spec already exists"
+
+    - name: Verify files
+      run: |
+        echo "📁 Current directory contents:"
+        ls -la
+        echo ""
+        echo "📄 Main files:"
+        [ -f main.py ] && echo "✅ main.py exists" || echo "❌ main.py missing"
+        [ -f mobile_target_agent_2026.py ] && echo "✅ mobile_target_agent_2026.py exists" || echo "❌ mobile_target_agent_2026.py missing"
+        [ -f buildozer.spec ] && echo "✅ buildozer.spec exists" || echo "❌ buildozer.spec missing"
+
+    - name: Build APK (Debug)
+      if: github.event.inputs.build_type != 'release'
+      run: |
+        echo "🔨 Building DEBUG APK..."
+        buildozer android debug -v
+
+    - name: Build APK (Release)
+      if: github.event.inputs.build_type == 'release'
+      run: |
+        echo "🔨 Building RELEASE APK..."
+        buildozer android release -v
+
+    - name: List build output
+      run: |
+        echo "📦 Build output:"
+        ls -la bin/ || echo "No bin directory found"
+        find . -name "*.apk" -type f || echo "No APK files found"
+
+    - name: Upload APK (Debug)
+      if: github.event.inputs.build_type != 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-agent-2026-debug-apk
+        path: bin/*debug*.apk
+        retention-days: 30
+        if-no-files-found: error
+
+    - name: Upload APK (Release)
+      if: github.event.inputs.build_type == 'release'
+      uses: actions/upload-artifact@v4
+      with:
+        name: mobile-agent-2026-release-apk
+        path: bin/*release*.apk
+        retention-days: 90
+        if-no-files-found: error
+
+    - name: Upload build logs
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          .buildozer/android/platform/build-*/logs/
+          .buildozer/android/logs/
+        retention-days: 7
+        if-no-files-found: ignore
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install kivy pillow requests python-socketio[client]
+
+    - name: Test Python syntax
+      run: |
+        python -m py_compile main.py
+        python -m py_compile mobile_target_agent_2026.py
+
+    - name: Test imports
+      run: |
+        python -c "
+        try:
+            from mobile_target_agent_2026 import MobileAgentApp
+            print('✅ All imports successful')
+        except Exception as e:
+            print(f'❌ Import error: {e}')
+            exit(1)
+        "

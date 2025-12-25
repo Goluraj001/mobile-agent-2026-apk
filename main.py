@@ -5,7 +5,7 @@ This file is required by Buildozer to build the APK
 """
 
 # Import and run the mobile agent
-from mobile_target_agent_2026 import MobileAgentApp
+from mobile_target_agent_2026_fixed import MobileAgentApp
 
 if __name__ == '__main__':
     print("🎉 Starting Mobile Target Agent 2026 APK")

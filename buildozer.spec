@@ -16,11 +16,11 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,txt,json
 
 # (str) Application versioning (method 1)
-version = 2026.1.0
+version = 2026.2.0
 
 # (list) Application requirements
 # comma separated e.g. requirements = sqlite3,kivy
-requirements = python3,kivy,pillow,requests,python-socketio[client],websocket-client,bidict,python-engineio
+requirements = python3,kivy,pillow,requests,python-socketio[client]==5.8.0,websocket-client,bidict,python-engineio
 
 # (str) Supported orientation (landscape, sensorLandscape, portrait, sensorPortrait or all)
 orientation = portrait
@@ -50,7 +50,7 @@ android.activity_class_name = org.kivy.android.PythonActivity
 android.service_class_name = org.kivy.android.PythonService
 
 # (list) Permissions
-android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,CAMERA,RECORD_AUDIO,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,WAKE_LOCK,VIBRATE,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE,SYSTEM_ALERT_WINDOW,WRITE_SETTINGS,READ_PHONE_STATE,CALL_PHONE,SEND_SMS,RECEIVE_SMS,READ_SMS,WRITE_CALL_LOG,READ_CALL_LOG,ADD_VOICEMAIL,USE_SIP,PROCESS_OUTGOING_CALLS,MODIFY_AUDIO_SETTINGS,RECORD_AUDIO,BLUETOOTH,BLUETOOTH_ADMIN,NFC,CHANGE_WIFI_STATE,CHANGE_NETWORK_STATE,ACCESS_LOCATION_EXTRA_COMMANDS,INSTALL_PACKAGES,DELETE_PACKAGES,CLEAR_APP_CACHE,CLEAR_APP_USER_DATA,MOVE_PACKAGE,READ_LOGS,DIAGNOSTIC,STATUS_BAR,DISABLE_KEYGUARD,EXPAND_STATUS_BAR,GET_TASKS,KILL_BACKGROUND_PROCESSES,MODIFY_PHONE_STATE,READ_FRAME_BUFFER,REBOOT,SET_WALLPAPER,SET_WALLPAPER_HINTS,DEVICE_POWER,FACTORY_TEST,MASTER_CLEAR,MOUNT_UNMOUNT_FILESYSTEMS,PERSISTENT_ACTIVITY,RECEIVE_BOOT_COMPLETED,SET_TIME_ZONE,WRITE_SECURE_SETTINGS,WRITE_SYNC_SETTINGS,READ_SYNC_SETTINGS,ACCOUNT_MANAGER,AUTHENTICATE_ACCOUNTS,GET_ACCOUNTS,MANAGE_ACCOUNTS,USE_CREDENTIALS,WRITE_CONTACTS,READ_CONTACTS,WRITE_CALENDAR,READ_CALENDAR
+android.permissions = INTERNET,WRITE_EXTERNAL_STORAGE,READ_EXTERNAL_STORAGE,CAMERA,RECORD_AUDIO,ACCESS_FINE_LOCATION,ACCESS_COARSE_LOCATION,WAKE_LOCK,VIBRATE,ACCESS_NETWORK_STATE,ACCESS_WIFI_STATE
 
 # (list) Android application meta-data to set (key=value format)
 android.meta_data = 
@@ -66,7 +66,7 @@ android.logcat_filters = *:S python:D
 android.copy_libs = 1
 
 # (str) The Android arch to build for, choices: armeabi-v7a, arm64-v8a, x86, x86_64
-android.archs = arm64-v8a, armeabi-v7a
+android.archs = arm64-v8a
 
 # (bool) enables Android auto backup feature (Android API >=23)
 android.allow_backup = True
